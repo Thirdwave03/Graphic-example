@@ -1,0 +1,67 @@
+#########################
+# 1) 텍스트 파일 (LF 유지)
+#########################
+# - Git이 텍스트로 인식, 줄바꿈은 LF로 강제
+*.cs            text eol=lf
+*.meta          text eol=lf
+*.shader        text eol=lf
+*.cginc         text eol=lf
+*.txt           text eol=lf
+*.json          text eol=lf
+*.xml           text eol=lf
+*.asmdef        text eol=lf
+*.asmref        text eol=lf
+*.md            text eol=lf
+
+# Unity 씬/프리팹/머티리얼/에셋 (Force Text 설정 시 실제로 텍스트 형태)
+*.unity         text eol=lf
+*.prefab        text eol=lf
+*.mat           text eol=lf
+*.anim          text eol=lf
+*.controller    text eol=lf
+*.asset         text eol=lf
+
+#########################
+# 2) 바이너리 파일
+#########################
+# - Git이 줄바꿈 변환을 하지 않도록 처리
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.tga           binary
+*.psd           binary
+*.exr           binary
+*.dds           binary
+*.tif           binary
+*.tiff          binary
+
+# 오디오/비디오
+*.wav           binary
+*.mp3           binary
+*.ogg           binary
+*.mp4           binary
+*.mov           binary
+*.avi           binary
+
+# Unity 패키지/라이브러리/기타
+*.unitypackage  binary
+*.dll           binary
+*.exe           binary
+*.zip           binary
+*.rar           binary
+*.7z            binary
+*.tar           binary
+*.pdf           binary
+
+# 3D/그래픽 리소스
+*.fbx           binary
+*.obj           binary
+*.blend         binary
+*.max           binary
+*.mesh          binary
+*.meshb         binary
+
+# 폰트
+*.ttf           binary
+*.otf           binary
+*.fontsettings  binary
