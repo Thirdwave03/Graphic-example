@@ -25,22 +25,28 @@ public enum Sides
     Count,
 }
 
+public enum Sides8Way
+{
+    N,
+    NE,
+    E,
+    SE,
+    S,
+    SW,
+    W,
+    NW,
+    Count,
+}
+
 public class Tile
 {
     // node
     public int id = 0;
     public Tile[] neighbors = new Tile[(int)Sides.Count];
+    public Tile[] neighbors8way = new Tile[(int)Sides8Way.Count];
     public Tile previous;
 
     public int autoTileId = 0;
-
-    //public bool isSteppable
-    //{
-    //    get
-    //    {
-    //        
-    //    }
-    //}
 
     public int Weight => (TileTypes)autoTileId switch
     {        
@@ -58,6 +64,37 @@ public class Tile
     public void SetNeighbor(Sides side, Tile neighbor)
     {
         neighbors[(int)side] = neighbor;
+    }
+
+    public void SetNeighbor(Sides8Way side, Tile neighbor)
+    {
+        neighbors8way[(int)side] = neighbor;
+    }
+
+    public void Update8WayNeighbor()
+    {
+        if (neighbors8way[(int)Sides8Way.N] == null)
+        {
+            if (neighbors8way[(int)Sides8Way.E] == null)
+            {
+                neighbors8way[(int)Sides8Way.NE] = null;
+            }
+            if(neighbors8way[(int)Sides8Way.W] == null)
+            {
+                neighbors8way[(int)Sides8Way.NW] = null;
+            }
+        }        
+        if (neighbors8way[(int)Sides8Way.S] == null)
+        {
+            if (neighbors8way[(int)Sides8Way.E] == null)
+            {
+                neighbors8way[(int)Sides8Way.SE] = null;
+            }
+            if(neighbors8way[(int)Sides8Way.W] == null)
+            {
+                neighbors8way[(int)Sides8Way.SW] = null;
+            }
+        }        
     }
 
     public void UpdateAutoTileId()
@@ -92,10 +129,34 @@ public class Tile
             if (neighbors[i] != null)
             {
                 neighbors[i].RemoveNeighbor(this);
-                neighbors[i] = null;
+                neighbors[i] = null;                
             }
         }
         UpdateAutoTileId();
     }
 
+    public void RemoveNeighbor8Way(Tile tile)
+    {
+        for (int i = 0; i < neighbors8way.Length; ++i)
+        {
+            if (neighbors8way[i] == tile)
+            {
+                neighbors8way[i] = null;
+            }
+        }
+        UpdateAutoTileId();
+    }
+
+    public void ClearNeighbors8Way()
+    {
+        for (int i = 0; i < neighbors8way.Length; i++)
+        {
+            if (neighbors8way[i] != null)
+            {
+                neighbors8way[i].RemoveNeighbor8Way(this);
+                neighbors8way[i] = null;
+            }
+        }
+        UpdateAutoTileId();
+    }
 }

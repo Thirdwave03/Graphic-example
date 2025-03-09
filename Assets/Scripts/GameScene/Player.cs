@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     private List<int> path = new List<int>();
     private int currentTileId;
     private int targetTileId;
-    private int revealFogDistance = 4;
+    public int revealFogDistance = 3;
 
     private Vector3 CurrentTilePos { get; set; }
 
@@ -87,6 +87,7 @@ public class Player : MonoBehaviour
         {
             currentTileId = targetTileId;
             CurrentTilePos = stage.tileObjs[currentTileId].transform.position;
+            stage.RevealFog(currentTileId, revealFogDistance);
             isMoving = false;
         }
     }

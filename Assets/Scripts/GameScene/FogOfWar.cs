@@ -3,41 +3,87 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class FogOfWar : MonoBehaviour
+public class FogOfWar 
 {
     public int id;
     public FogOfWar[] neighbors = new FogOfWar[(int)Sides.Count];
     public FogOfWar previous;
 
-    public int autoTileId = 0;
+    public int autoFowId = 0;
     public bool revealed = false;
 
-    public void UpdateAutoTileId()
+    public void UpdateAutoFowId()
     {
         // DRLU
-        autoTileId = (int)TileTypes.Grass;
+        if (revealed)
+        {
+            autoFowId = -1;
+            return;
+        }
+ 
+        autoFowId = 15;
         for (int i = 0; i < neighbors.Length; i++)
         {
             if (neighbors[i] == null)
+            {
                 continue;
+            }
 
             if (neighbors[i].revealed)
             {
-                autoTileId &= ~(1 << neighbors.Length - 1 - i);
+                autoFowId &= ~(1 << neighbors.Length - 1 - i);
             }
         }
     }
 
-    public void Revealed(FogOfWar fow)
+    //public void RemoveNeighbor(FogOfWar fow)
+    //{
+    //    for (int i = 0; i < neighbors.Length; ++i)
+    //    {
+    //        if (neighbors[i] == fow)
+    //        {
+    //            neighbors[i] = null;
+    //        }
+    //    }
+    //    UpdateAutoFowId();
+    //}
+
+    //public void ClearNeighbors()
+    //{
+    //    for (int i = 0; i < neighbors.Length; i++)
+    //    {
+    //        if (neighbors[i] != null)
+    //        {
+    //            neighbors[i].RemoveNeighbor(this);
+    //            neighbors[i] = null;
+    //        }
+    //    }
+    //    UpdateAutoFowId();
+    //}
+
+    public void OnReveal()
+    {
+        revealed = true;
+        for (int i = 0; i < neighbors.Length; i++)
+        {
+            if (neighbors[i] != null)
+            {
+                neighbors[i].UpdateNeighbor(this);
+            }
+        }
+        UpdateAutoFowId();
+    }
+
+    public void UpdateNeighbor(FogOfWar fow)
     {
         for (int i = 0; i < neighbors.Length; ++i)
         {
             if (neighbors[i] == fow)
             {
-                neighbors[i] = null;
+                neighbors[i].revealed = true;
             }
         }
-        UpdateAutoTileId();
+        UpdateAutoFowId();
     }
 
     public void SetNeighbor(Sides side, FogOfWar neighbor)

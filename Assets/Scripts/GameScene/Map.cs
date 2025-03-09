@@ -39,6 +39,14 @@ public class Map
         SetFows(width, height);
     }
 
+    public void Update8WayTiles()
+    {
+        foreach(var tile in tiles)
+        {
+            tile.Update8WayNeighbor();
+        }
+    }
+
     private void SetTiles(int width, int height)
     {
         columns = width;
@@ -60,18 +68,46 @@ public class Map
                 if (r - 1 >= 0)
                 {
                     tiles[index].SetNeighbor(Sides.Top, tiles[index - columns]);
+                    tiles[index].SetNeighbor(Sides8Way.N, tiles[index - columns]);
                 }
                 if (c + 1 < columns)
                 {
                     tiles[index].SetNeighbor(Sides.Right, tiles[index + 1]);
+                    tiles[index].SetNeighbor(Sides8Way.E, tiles[index + 1]);
                 }
                 if (c - 1 >= 0)
                 {
                     tiles[index].SetNeighbor(Sides.Left, tiles[index - 1]);
+                    tiles[index].SetNeighbor(Sides8Way.W, tiles[index - 1]);
                 }
                 if (r + 1 < rows)
                 {
                     tiles[index].SetNeighbor(Sides.Bottom, tiles[index + columns]);
+                    tiles[index].SetNeighbor(Sides8Way.S, tiles[index + columns]);
+                }
+
+                if(r - 1 >= 0)
+                {
+                    if (c + 1 < columns)
+                    {
+                        tiles[index].SetNeighbor(Sides8Way.NE, tiles[index - columns + 1]);
+                    }
+                    if (c - 1 >= 0)
+                    {
+                        tiles[index].SetNeighbor(Sides8Way.NW, tiles[index - columns - 1]);
+                    }
+                }
+
+                if (r + 1 < rows)
+                {
+                    if (c + 1 < columns)
+                    {
+                        tiles[index].SetNeighbor(Sides8Way.SE, tiles[index + columns + 1]);
+                    }
+                    if (c - 1 >= 0)
+                    {
+                        tiles[index].SetNeighbor(Sides8Way.SW, tiles[index + columns - 1]);
+                    }
                 }
             }
         }
@@ -121,7 +157,7 @@ public class Map
 
         for (int i = 0; i < tiles.Length; ++i)
         {
-            fows[i].UpdateAutoTileId();
+            fows[i].UpdateAutoFowId();
         }
     }
 
@@ -293,7 +329,7 @@ public class Map
         return success;
     }
 
-    public bool AStar(Tile start, Tile goal)
+    public bool AStar(Tile start, Tile goal, bool is8WayPathfinding)
     {
         path.Clear();
         ResetPreviousTile();
@@ -324,7 +360,14 @@ public class Map
                 success = true;
             }
 
-            foreach (var neighbor in currentTile.neighbors)
+            var neighbors = currentTile.neighbors;
+            if (is8WayPathfinding)
+            {
+                neighbors = currentTile.neighbors8way;
+            }
+
+
+            foreach (var neighbor in neighbors)
             {
                 if (neighbor == null)
                 {
@@ -543,6 +586,7 @@ public class Map
             {
                 case TileTypes.Empty:
                     tiles[i].ClearNeighbors();
+                    tiles[i].ClearNeighbors8Way();
                     break;
                 case TileTypes.Grass:
                     break;
@@ -562,6 +606,7 @@ public class Map
             {
                 case TileTypes.Empty:
                     tiles[i].ClearNeighbors();
+                    tiles[i].ClearNeighbors8Way();
                     break;
                 case TileTypes.Grass:
                     break;

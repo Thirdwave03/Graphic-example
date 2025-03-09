@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
+using static UnityEditor.PlayerSettings;
 
 public enum AlgorithmTypes
 {
@@ -44,6 +45,9 @@ public class Stage : MonoBehaviour
     [SerializeField]
     private AlgorithmTypes algorithm = AlgorithmTypes.BFS;
 
+    [SerializeField]
+    private bool is8WayPathfinding;
+
     public Map map;
 
     public GameObject tilePrefab;
@@ -72,13 +76,14 @@ public class Stage : MonoBehaviour
         var position = tileObjs[map.TownTiles[0].id].transform.position;
         player = Instantiate(playerPrefab, position, Quaternion.identity);
         player.GetComponent<Player>().SetStage(this, map.TownTiles[0].id);
+        RevealFog(map.TownTiles[0].id, player.GetComponent<Player>().revealFogDistance);
     }
 
     public void OnReset()
     {
         MakeMap();
         CreateGrid();
-        //CreateFog();
+        CreateFog();
         CreatePlayer();
         ColorPath();
     }
@@ -104,7 +109,8 @@ public class Stage : MonoBehaviour
         map.NewMap(mapWidth, mapHeight);
         bool success = map.CreateIsland(coastErodeIterator, coastErodePercent, lakePercent, treePercent,
             hillPercent, mountainCount, dungeonCount, algorithm);
-        
+
+        map.Update8WayTiles();
         Debug.Log($"map created ({mapWidth}, {mapHeight})");
     }
 
@@ -216,7 +222,7 @@ public class Stage : MonoBehaviour
                 //{
                 //    sr.sprite = fowSprites[map.tiles[id].autoTileId];
                 //}
-                sr.sprite = fowSprites[map.fows[id].autoTileId];
+                sr.sprite = fowSprites[map.fows[id].autoFowId];
             }
             pos.x = startPos.x;
             pos.y -= tileSize.y;
@@ -225,12 +231,55 @@ public class Stage : MonoBehaviour
 
     public void RevealFog(int tileId, int distance)
     {
-        
-        
+        distance = Mathf.Max(distance, 0);
 
+        int columns = map.columns;
+        int rows = map.rows;
+        for (int i = -distance; i <= distance; ++i)
+        {
+            for(int j = -distance; j <= distance; ++j)
+            {
+                int row = tileId / columns;
+                row = Mathf.Clamp(row + i, 0, rows-1);
+                
+                int col = tileId % columns;
+                col = Mathf.Clamp(col + j, 0, columns-1);
 
+                int newId = row * columns + col;
+                map.fows[newId].OnReveal();
+                //map.fows[newId].revealed = true;                
+            }
+        }
 
+        distance++;
+        for (int i = -distance; i <= distance; ++i)
+        {
+            for (int j = -distance; j <= distance; ++j)
+            {
+                int row = tileId / columns;
+                row = Mathf.Clamp(row + i, 0, rows - 1);
 
+                int col = tileId % columns;
+                col = Mathf.Clamp(col + j, 0, columns - 1);
+
+                int newId = row * columns + col;
+                map.fows[newId].UpdateAutoFowId();
+                DecorateFog(newId);
+            }
+        }
+    }
+
+    public void DecorateFog(int tileId)
+    {
+        var sr = fowObjs[tileId].GetComponent<SpriteRenderer>();
+        if (map.fows[tileId].autoFowId == -1)
+        {
+            sr.sprite = null;
+        }
+        else
+        {
+            sr.sprite = fowSprites[map.fows[tileId].autoFowId];
+        }
     }
 
     public void DecorateTile(int tileId)
@@ -290,7 +339,13 @@ public class Stage : MonoBehaviour
         Tile start = map.tiles[startTileId];
         Tile goal = map.tiles[tileId];
 
-        if(!map.AStar(start, goal))
+        if (!map.fows[tileId].revealed)
+        {
+            Debug.Log($"Not revealed tile");
+            return null;
+        }
+
+        if(!map.AStar(start, goal, is8WayPathfinding))
             return null;
 
         if(map.path.Count > 1)
